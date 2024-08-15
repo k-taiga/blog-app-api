@@ -11,7 +11,7 @@ import (
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/hello", handlers.HelloHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article", handlers.PostArticleHandle).Methods(http.MethodGet)
+	r.HandleFunc("/article", handlers.PostArticleHandle).Methods(http.MethodPost)
 	r.HandleFunc("/article/list", handlers.ArticleListHandler).Methods(http.MethodGet)
 	r.HandleFunc("/article/{id:[0-9]+}", handlers.ArticleDetailHandler).Methods(http.MethodPatch)
 	r.HandleFunc("/article/nice", handlers.PostNiceHandler).Methods(http.MethodPost)
