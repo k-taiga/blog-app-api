@@ -6,3 +6,24 @@ services:
     ports:
       - "8080:8080"
     command: go run main.go
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_USER: ${ROOT_USER}
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB}
+      MYSQL_USER: ${USER_NAME}
+      MYSQL_PASSWORD: ${USER_PASSWORD}
+      TZ: Asia/Tokyo
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-volume:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --sql-mode=ONLY_FULL_GROUP_BY,NO_ENGINE_SUBSTITUTION
+
+volumes:
+  db-volume:
