@@ -50,10 +50,12 @@ func ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 		page = 1
 	}
 
-	log.Println(page)
+	articleList, err := services.GetArticleListService(page)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 
-	// []models.Articleの型をもつスライスを定義し初期化
-	articleList := []models.Article{models.Article1, models.Article2}
 	json.NewEncoder(w).Encode(articleList)
 }
 
@@ -68,6 +70,7 @@ func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 
 	article, err := services.GetArticleService(articleID)
 	if err != nil {
+		log.Printf("Error converting article ID: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
