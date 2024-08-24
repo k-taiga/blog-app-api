@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/k-taiga/blog-app-api/models"
+	"github.com/k-taiga/blog-app-api/services"
 )
 
 func HelloHandler(w http.ResponseWriter, req *http.Request) {
@@ -65,18 +66,43 @@ func ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Println(articleID)
+	article, err := services.GetArticleService(articleID)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 
-	article := models.Article1
 	json.NewEncoder(w).Encode(article)
 }
 
 func PostNiceHandler(w http.ResponseWriter, req *http.Request) {
-	article := models.Article1
+	var reqArticle models.Article
+	// modelのjsonとあっていなければBadRequest
+	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
+		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+	}
+
+	article, err := services.PostNiceService(reqArticle)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
 	json.NewEncoder(w).Encode(article)
 }
 
 func PostCommentHandler(w http.ResponseWriter, req *http.Request) {
-	comment := models.Comment1
+	var reqComment models.Comment
+	// modelのjsonとあっていなければBadRequest
+	if err := json.NewDecoder(req.Body).Decode(&reqComment); err != nil {
+		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+	}
+
+	comment, err := services.PostCommentService(reqComment)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
 	json.NewEncoder(w).Encode(comment)
 }
