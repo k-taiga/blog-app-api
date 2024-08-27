@@ -2,7 +2,7 @@ FROM golang:1.18
 
 WORKDIR /app
 
-COPY ./src .env ./
+COPY ./src ./
 
 RUN go mod download
 
