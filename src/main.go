@@ -8,10 +8,8 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"github.com/k-taiga/blog-app-api/controllers"
-	"github.com/k-taiga/blog-app-api/services"
+	"github.com/k-taiga/blog-app-api/api"
 )
 
 var (
@@ -40,16 +38,7 @@ func main() {
 		return
 	}
 
-	ser := services.NewMyAppService(db)
-	con := controllers.NewMyAppControllers(ser)
-
-	r := mux.NewRouter()
-	r.HandleFunc("/hello", con.HelloHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article", con.PostArticleHandle).Methods(http.MethodPost)
-	r.HandleFunc("/article/list", con.ArticleListHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article/{id:[0-9]+}", con.ArticleDetailHandler).Methods(http.MethodGet)
-	r.HandleFunc("/article/nice", con.PostNiceHandler).Methods(http.MethodPost)
-	r.HandleFunc("/comment", con.PostCommentHandler).Methods(http.MethodPost)
+	r := api.NewRouter(db)
 
 	log.Println("server started")
 	// ListenAndServeで起動

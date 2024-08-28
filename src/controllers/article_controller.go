@@ -8,23 +8,23 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/k-taiga/blog-app-api/controllers/services"
 	"github.com/k-taiga/blog-app-api/models"
-	"github.com/k-taiga/blog-app-api/services"
 )
 
-type MyAppController struct {
-	service *services.MyAppService
+type ArticleController struct {
+	service services.ArticleServicer
 }
 
-func NewMyAppControllers(s *services.MyAppService) *MyAppController {
-	return &MyAppController{service: s}
+func NewArticleControllers(s services.ArticleServicer) *ArticleController {
+	return &ArticleController{service: s}
 }
 
-func (c *MyAppController) HelloHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) HelloHandler(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "Hello, world!\n")
 }
 
-func (c *MyAppController) PostArticleHandle(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) PostArticleHandle(w http.ResponseWriter, req *http.Request) {
 	var reqArticle models.Article
 
 	// ストリームから直接Decodeする(メモリに一度いれる必要がない)
@@ -41,7 +41,7 @@ func (c *MyAppController) PostArticleHandle(w http.ResponseWriter, req *http.Req
 	json.NewEncoder(w).Encode(article)
 }
 
-func (c *MyAppController) ArticleListHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.Request) {
 	queryMap := req.URL.Query()
 
 	var page int
@@ -68,7 +68,7 @@ func (c *MyAppController) ArticleListHandler(w http.ResponseWriter, req *http.Re
 	json.NewEncoder(w).Encode(articleList)
 }
 
-func (c *MyAppController) ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
 	// func Vars(r *http.Request) map[string]string でパスパラメータのmapを取得する
 	// AtoiでStringをintで取得
 	articleID, err := strconv.Atoi(mux.Vars(req)["id"])
@@ -87,7 +87,7 @@ func (c *MyAppController) ArticleDetailHandler(w http.ResponseWriter, req *http.
 	json.NewEncoder(w).Encode(article)
 }
 
-func (c *MyAppController) PostNiceHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) PostNiceHandler(w http.ResponseWriter, req *http.Request) {
 	var reqArticle models.Article
 	// modelのjsonとあっていなければBadRequest
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
@@ -101,20 +101,4 @@ func (c *MyAppController) PostNiceHandler(w http.ResponseWriter, req *http.Reque
 	}
 
 	json.NewEncoder(w).Encode(article)
-}
-
-func (c *MyAppController) PostCommentHandler(w http.ResponseWriter, req *http.Request) {
-	var reqComment models.Comment
-	// modelのjsonとあっていなければBadRequest
-	if err := json.NewDecoder(req.Body).Decode(&reqComment); err != nil {
-		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
-	}
-
-	comment, err := c.service.PostCommentService(reqComment)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	json.NewEncoder(w).Encode(comment)
 }
