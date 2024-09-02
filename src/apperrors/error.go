@@ -4,7 +4,7 @@ type MyAppError struct {
 	// フィールド名を省略すると型名がそのままフィールド名になる
 	ErrCode
 	Message string
-	Err     error
+	Err     error `json:"-"`
 }
 
 // Errorメソッドを実装することでerrorインターフェースを実装する
