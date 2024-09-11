@@ -25,7 +25,7 @@ func (c *ArticleController) HelloHandler(w http.ResponseWriter, req *http.Reques
 	io.WriteString(w, "Hello, world!\n")
 }
 
-func (c *ArticleController) PostArticleHandle(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 	var reqArticle models.Article
 
 	// ストリームから直接Decodeする(メモリに一度いれる必要がない)
