@@ -35,20 +35,31 @@ func (s *MyAppService) GetArticleListService(page int) ([]models.Article, error)
 }
 
 func (s *MyAppService) GetArticleService(articleID int) (models.Article, error) {
-	article, err := repositories.SelectArticleDetail(s.db, articleID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			err = apperrors.NotAvailableData.Wrap(err, "failed to select data")
-			return models.Article{}, err
+	var article models.Article
+	var commentList []models.Comment
+	var articleGetErr, commentGetErr error
+
+	// funcで無名関数を定義しgo~()で実行
+	go func() {
+		article, articleGetErr = repositories.SelectArticleDetail(s.db, articleID)
+	}()
+
+	go func() {
+		commentList, commentGetErr = repositories.SelectCommentList(s.db, articleID)
+	}()
+
+	if articleGetErr != nil {
+		if errors.Is(articleGetErr, sql.ErrNoRows) {
+			articleGetErr = apperrors.NotAvailableData.Wrap(articleGetErr, "failed to select data")
+			return models.Article{}, articleGetErr
 		}
-		err = apperrors.GetDataFailed.Wrap(err, "failed to select data")
-		return models.Article{}, err
+		articleGetErr = apperrors.GetDataFailed.Wrap(articleGetErr, "failed to select data")
+		return models.Article{}, articleGetErr
 	}
 
-	commentList, err := repositories.SelectCommentList(s.db, articleID)
-	if err != nil {
-		err = apperrors.GetDataFailed.Wrap(err, "failed to select data")
-		return models.Article{}, err
+	if commentGetErr != nil {
+		commentGetErr = apperrors.GetDataFailed.Wrap(commentGetErr, "failed to select data")
+		return models.Article{}, commentGetErr
 	}
 
 	// commentListのスライスの中身を展開してarticle.CommentListに追加
