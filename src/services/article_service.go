@@ -39,14 +39,41 @@ func (s *MyAppService) GetArticleService(articleID int) (models.Article, error) 
 	var commentList []models.Comment
 	var articleGetErr, commentGetErr error
 
-	// funcで無名関数を定義しgo~()で実行
-	go func() {
-		article, articleGetErr = repositories.SelectArticleDetail(s.db, articleID)
-	}()
+	// 複数の型をchで受け取るためにstructを使う
+	type articleResult struct {
+		article models.Article
+		err     error
+	}
 
-	go func() {
-		commentList, commentGetErr = repositories.SelectCommentList(s.db, articleID)
-	}()
+	articleChan := make(chan articleResult)
+	defer close(articleChan)
+
+	go func(ch chan<- articleResult, db *sql.DB, articleID int) {
+		article, err := repositories.SelectArticleDetail(db, articleID)
+		ch <- articleResult{article: article, err: err}
+	}(articleChan, s.db, articleID)
+
+	type commentResult struct {
+		commentList *[]models.Comment
+		err         error
+	}
+
+	commentChan := make(chan commentResult)
+	defer close(commentChan)
+
+	go func(ch chan<- commentResult, db *sql.DB, articleID int) {
+		commentList, err := repositories.SelectCommentList(db, articleID)
+		ch <- commentResult{commentList: &commentList, err: err}
+	}(commentChan, s.db, articleID)
+
+	for i := 0; i < 2; i++ {
+		select {
+		case ar := <-articleChan:
+			article, articleGetErr = ar.article, ar.err
+		case cr := <-commentChan:
+			commentList, commentGetErr = *cr.commentList, cr.err
+		}
+	}
 
 	if articleGetErr != nil {
 		if errors.Is(articleGetErr, sql.ErrNoRows) {
